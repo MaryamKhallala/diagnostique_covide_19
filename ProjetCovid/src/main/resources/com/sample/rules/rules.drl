@@ -1,0 +1,293 @@
+package com.sample.rules
+
+import com.diagnostic.model.bo.*;
+import com.diagnostic.model.service.*;
+import java.util.*;
+
+
+rule "1"
+	salience 23
+	when 
+		$Patient : Patient()
+    	$Diags : ArrayList() 
+               from collect( Symptome( designation=="fievre", mesure.getValeur()>=38)
+                             from $Patient.getDiagnostics()[0].getSymptomes()
+                           ) and ( Symptome( designation=="toux sèche")
+                             from $Patient.getDiagnostics()[0].getSymptomes()
+                           ) and ( Symptome( designation=="fatigue")
+                             from $Patient.getDiagnostics()[0].getSymptomes()
+                            ) 
+                                        
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.6);
+		System.out.println( " regle : 1");
+end
+/********************************************************************************/
+
+
+rule "2"
+	salience 22
+	when  
+		$Patient : Patient($sympt: diagnostics.get(0).getSymptomes(), $diag : diagnostics.get(0))
+		$s :  Symptome( designation == "congestion nasal") from $sympt
+		$d : Diagnostic( getDegreComptamination() == 0.6)  from $diag    
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.7);
+		System.out.println( " regle : 2");
+end
+
+/********************************************************************************/
+
+rule "3" 
+salience 21
+	when 
+		$Patient : Patient($diag : diagnostics.get(0), region.getClassification() == "Haut")
+		$d : Diagnostic( degreComptamination >= 0.7) from $diag
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 3");
+end		
+/********************************************************************************/
+
+rule "4"
+salience 20
+	when 
+		$Patient : Patient($diag : diagnostics.get(0))
+    	$Diags : ArrayList() 
+               from collect( Symptome( designation=="écoulement nasal")
+                             from $Patient.getDiagnostics()[0].getSymptomes()
+                           ) and ( Symptome( designation=="maux de gorge")
+                             from $Patient.getDiagnostics()[0].getSymptomes()
+                           )
+        $d : Diagnostic( degreComptamination >= 0.7) from $diag  
+           
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 4");
+end
+/********************************************************************************/
+rule "5"
+salience 19
+	when 
+		$Patient : Patient($diag : diagnostics.get(0) ,$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "diarrhé") from $sympt
+        $d : Diagnostic( degreComptamination >= 0.8) from $diag   
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.9);
+		System.out.println( " regle : 5");
+end
+/********************************************************************************/
+rule "6"
+salience 18
+	when 
+		$Patient : Patient($diag : diagnostics.get(0) ,$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "dyspnée") from $sympt
+        $d : Diagnostic( degreComptamination>= 0.6)  from $diag     
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.95);
+		System.out.println( " regle : 6");
+end
+/********************************************************************************/
+rule "7"
+salience 17
+	when 
+		$Patient : Patient($diag : diagnostics.get(0)) 
+        $d : Diagnostic( $diag.getDegreComptamination() >= 0.8) from $diag  
+        $AlertResp : AlertResp()   
+	then
+		//$AlertResp.notifyResps();
+		System.out.println( " regle : 7");
+end
+/********************************************************************************/
+
+rule "8"
+salience 16
+	when 
+		$Patient : Patient(age > 70 ,$diag : diagnostics.get(0))
+        $d : Diagnostic( degreComptamination >= 0.6)  from $diag 
+        $AlertResp : AlertResp()    
+	then
+		//$AlertResp.notifyResps();
+		System.out.println( " regle : 8");
+end
+/********************************************************************************/
+rule "9"
+salience 15
+	when 
+		$Patient : Patient($diag : diagnostics.get(0))
+		$maladie : ArrayList() 
+               from collect( MaladieChronique( nomMalCh=="fievre")
+                             from $Patient.getMaladieChroniques()
+                           ) and ( MaladieChronique( nomMalCh == "Cardiaque")
+                             from $Patient.getMaladieChroniques()
+                           ) and ( MaladieChronique( nomMalCh == "diabétique")
+                             from $Patient.getMaladieChroniques()
+                            ) 
+        $d : Diagnostic( degreComptamination >= 0.6)  from $diag 
+        $AlertResp : AlertResp()       
+	then
+		//$AlertResp.notifyResps();
+		System.out.println( " regle : 9");
+end
+/********************************************************************************/
+rule "10"
+salience 14
+	when 
+		$Patient : Patient($diag : diagnostics.get(0),$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "frissons") from $sympt
+        $d : Diagnostic( degreComptamination >= 0.6) from $diag    
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 10");
+end
+
+/********************************************************************************/
+rule "11"
+salience 13
+	when 
+		$Patient : Patient($diag : diagnostics.get(0),$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "douleurs musculaires") from $sympt
+        $d : Diagnostic( degreComptamination >= 0.6) from $diag    
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 11");
+end
+
+/********************************************************************************/
+rule "12"
+salience 12
+	when 
+		$Patient : Patient($diag : diagnostics.get(0),$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "maux de tete") from $sympt
+        $d : Diagnostic( degreComptamination >= 0.6)   from $diag     
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 12");
+end
+/********************************************************************************/
+rule "13"
+salience 11
+	when 
+		$Patient : Patient($diag : diagnostics.get(0),$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "gorge sèche") from $sympt
+        $d : Diagnostic( degreComptamination >= 0.6) from $diag    
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 13");
+end
+/********************************************************************************/
+rule "14"
+salience 10
+	when 
+		$Patient : Patient($diag : diagnostics.get(0),$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( ( designation == "perte de goût" || designation =="perte de l'odorat" )) from $sympt
+        $d : Diagnostic( degreComptamination >= 0.6)  from $diag      
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 14");
+end
+/********************************************************************************/
+rule "15"
+salience 9
+	when 
+		$Patient : Patient($diag : diagnostics.get(0),$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "essouflement") from $sympt
+        $d : Diagnostic( degreComptamination >= 0.6) from $diag    
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.85);
+		System.out.println( " regle : 15");
+end
+/********************************************************************************/
+rule "16"
+salience 8
+	when 
+		$Patient : Patient( age > 70, $sympt: diagnostics.get(0).getSymptomes() )
+		$s :  Symptome( ( designation == "confusion" || designation =="chute" )) from $sympt
+              
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.6); 
+		System.out.println( " regle : 16");
+end
+/********************************************************************************/
+
+rule "17"
+salience 7
+	when 
+		$Patient : Patient( age > 70 ,$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "diarrhé") from $sympt   
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.6); 
+		System.out.println( " regle : 17");
+end
+/********************************************************************************/
+
+rule "18"
+salience 6
+	when 
+		$Patient : Patient($diag : diagnostics.get(0),$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( ( designation == "nausée" || designation == "vomissement" ) ) from $sympt
+        $d : Diagnostic(degreComptamination >= 0.6)  from $diag      
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 18");
+end
+/********************************************************************************/
+
+rule "19"
+salience 5
+	when 
+		$Patient : Patient(contactCovid19 == true, $diag : diagnostics.get(0))
+        $d : Diagnostic(degreComptamination >= 0.6)  from $diag  
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.9);
+		System.out.println( " regle : 19");
+end
+/********************************************************************************/
+
+rule "20"
+salience 4
+	when 
+		$Patient : Patient($diag : diagnostics.get(0),$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "conjonctivite") from $sympt
+        $d : Diagnostic(degreComptamination >= 0.6)  from $diag      
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 20");
+end
+/********************************************************************************/
+
+rule "21"
+salience 3
+	when 
+		$Patient : Patient($diag : diagnostics.get(0),$sympt: diagnostics.get(0).getSymptomes())
+		$s :  Symptome( designation == "tremblement_répété") from $sympt
+        $d : Diagnostic(degreComptamination >= 0.6)  from $diag      
+	then
+		$Patient.getDiagnostics(0).setDegreComptamination(0.8);
+		System.out.println( " regle : 21");
+end
+/********************************************************************************/
+
+rule "22"
+salience 2
+	when 
+		$Patient : Patient($diag : diagnostics.get(0))
+       	$d : Diagnostic(degreComptamination >= 0.8)  from $diag
+       	$AlertResp : AlertResp()      
+	then
+		//$AlertResp.notifyResps();
+		System.out.println( " regle : 22");
+end
+/********************************************************************************/
+
+rule "23"
+salience 1
+	when 
+		$Patient : Patient( age > 70,$diag : diagnostics.get(0))
+      	$d : Diagnostic(degreComptamination >= 0.7)  from $diag
+      	$AlertResp : AlertResp() 
+	then
+		//$AlertResp.notifyResps();
+		System.out.println( " regle : 23");
+end
+
